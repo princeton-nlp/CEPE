@@ -4,7 +4,7 @@
 <!-- </p> -->
 
 This repository contains the code and data for paper [Long-Context Language Modeling Parallel Encodings](). 
-In this work, we propose CEPE -- **C**ontext-**E**xpansion with **P**arallel **E**ncodings -- a flexible framework for extending the context window of language models. 
+In this work, we propose **CEPE** — **C**ontext-**E**xpansion with **P**arallel **E**ncodings — a flexible framework for extending the context window of language models. 
 This repository includes the code for preprocessing the data, training CEPE, and evaluating all baselines.
 
 <img src="https://github.com/princeton-nlp/CEPE/blob/main/assets/overview.png?raw=true" alt="CEPE" width="100%">
@@ -43,6 +43,8 @@ output = model.generate(
   encoder_input_ids=contexts.input_ids.unsqueeze(0).to(device),
   encoder_attention_mask=contexts.attention_mask.unsqueeze(0).to(device), 
   max_new_tokens=200,
+  sample=True,
+  top_p=0.95,
 )
 print(tokenizer.batch_decode(output)[0])
 ```
@@ -99,7 +101,7 @@ Quick tips:
 ## Data
 
 To obtain the training and evaluation data, please refer to the `./data` directory.
-If you simply want all the data for evaluation, you can download them from Google Drive
+If you simply want all the data for evaluation, you can download them from Google Drive.
 |              Name | Link |
 |:--------------------------|------------|
 | RedPajama test, ArXiv + Book filtered by 32K tokens  | [link](https://drive.google.com/drive/folders/1VyV0i76JGefiihxBE4FZzneQRR8dFIj8?usp=sharing) |

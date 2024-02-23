@@ -78,7 +78,7 @@ def main():
         file_names = files[index_id*shard_size:(index_id+1)*shard_size]
 
     # process shard_size files at a time
-    tokenizer = LlamaTokenizerFast.from_pretrained("https://huggingface.co/meta-llama/Llama-2-7b-hf")
+    tokenizer = LlamaTokenizerFast.from_pretrained("meta-llama/Llama-2-7b-hf")
     # alternatively, use the Tokenizer class
     # tokenizer = Tokenizer("path/to/tokenizer.model")
 

@@ -45,9 +45,9 @@ This gives us a lot of flexbility of modifying the data during training easily w
 To sample the Arxiv and Books domain and filter by a total length (RP filtered):
 ```
 python sample_mds_ab.py {OUTPUT_PATH} {TOTAL LENGTH} {DECODER LENGTH} {EVAL SAMPLES} {TRAIN SAMPLES}
-python sample_mds_ab.py 8k_ab_train 8192 4096 1000 5000000
-python sample_mds_ab.py 32k_ab_test 32768 4096 1000 0
-python sample_mds_ab.py 128_ab_test 131072 4096 1000 0
+python sample_mds_ab.py 8k_ab 8192 4096 1000 5000000
+python sample_mds_ab.py 32k_ab 32768 4096 1000 0
+python sample_mds_ab.py 128_ab 131072 4096 1000 0
 ```
 Due to the way we structure the sampling, the files/documents used in the evaluation set should be always the same across different run with consistent random seeds.
 
@@ -56,8 +56,51 @@ Similar, we sample the RP concatenate with
 python sample_mds_concat.py {OUTPUT_PATH} {ENCODER LENGTH} {DECODER LENGTH} {EVAL SAMPLES} {TRAIN SAMPLES} {RETRIEVAL SAMPLES} {SHARD ID}
 
 for $shard in $(seq 0 99); do
-    python sample_mds_concat.py 2point5m_sample_8k_chunks_concatenate 4096 4096 35000 2500000 2e6 $shard
+    python sample_mds_concat.py 8k_concat 4096 4096 35000 2500000 2e6 $shard
 done
 ```
 By default, we split retrieval into 100 shards. If you are not interested in preprocessing the retrieval split, you can set `retrieval_shard = 0` in `sample_mds_concat.py`.
 The retrieval files will be saved as jsonl files across 100 shards. If you are interested in building and using the retrieval corpus, please refer to the `retrieval` directory.
+
+## CEPED
+
+To train CEPED, we require annotating the training data with logits of a base model.
+```
+python calculate_logits.py \
+    --input_dir $DATA_PATH \
+    --model_dir $MODEL \
+    --domain $DOMAIN \
+    --num_decoder_tokens $N_DEC \
+    --num_encoder_tokens $N_ENC \
+    --topk $TOPK \
+    --shard_id $SHARD_ID \
+    --retrieval_input_dir $RET_DATA \
+    --num_shards $N_SHARD --merge
+```
+
+To do this with LLaMA-2-Chat-7B as the base model on the 8k_ab_train dataset, arxiv domain:
+```
+for shard in $(seq 0 99); do
+    python calculate_logits.py \
+        --input_dir 8k_ab/train \
+        --model_dir meta-llama/Llama-2-7b-chat-hf \
+        --domain arxiv \
+        --num_decoder_tokens 2048 \
+        --num_encoder_tokens 2048 \
+        --shard_id 0 \
+        --num_shards 100
+done
+```
+If you decide to use sharding across different jobs, you can merge them with:
+```
+python calculate_logits.py \
+    --input_dir 8k_ab/train \
+    --model_dir meta-llama/Llama-2-7b-chat-hf \
+    --domain arxiv \
+    --num_decoder_tokens 2048 \
+    --num_encoder_tokens 2048 \
+    --shard_id 0 \
+    --num_shards 100 --merge
+```
+
+Note that this step requires a lot of storage -- annotating 2.5M sequences (~10B tokens) takes about 1.5T.
