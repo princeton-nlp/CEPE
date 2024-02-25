@@ -104,15 +104,16 @@ To obtain the training and evaluation data, please refer to the `./data` directo
 If you simply want all the data for evaluation, you can download them from Google Drive.
 |              Name | Link |
 |:--------------------------|------------|
-| RedPajama test, ArXiv + Book filtered by 32K tokens  | [link](https://drive.google.com/drive/folders/1VyV0i76JGefiihxBE4FZzneQRR8dFIj8?usp=sharing) |
-| RedPajama test, ArXiv + Book filtered by 128K tokens  | [link](https://drive.google.com/drive/folders/1H_yKFYiCRTTNKklJx_9R5PZFC7G7p1J0?usp=sharing) |
-| RedPajama test, Retrieval-augmented (Contriever)  | [link](https://drive.google.com/drive/folders/1QrnhOpnpGP2aPRyq0AUmjX5eZIZFLb5T?usp=sharing) |
+| RedPajama test, ArXiv + Book filtered by 32K tokens  | [link](https://drive.google.com/drive/folders/15s4ffY09d3I73Yiuv7ySAQjRrTJPjJb9?usp=sharing) |
+| RedPajama test, ArXiv + Book filtered by 128K tokens  | [link](https://drive.google.com/drive/folders/1n2yP7dlZ3JDMMroItDm0AAWKx2_ti4SE?usp=sharing) |
+| RedPajama test, all domains concatenated  | [link](https://drive.google.com/drive/folders/1WnCOJWPgJ4tEll56_-eBJmruPY2oY87z?usp=sharing) |
+| RedPajama test, Retrieval-augmented (Contriever)  | [link](https://drive.google.com/drive/folders/13saMvAWSGnZFNi-UJeC8ZGrJzrAEutRc?usp=sharing) |
 
 
 ### Retrieval
 
 It can be expensive to build and index the retrieval corpus at a large scale.
-We provide the test set used in the Retrieval-augmented Language Modeling section on google drive, which you can download from this [link](https://drive.google.com/drive/folders/1QrnhOpnpGP2aPRyq0AUmjX5eZIZFLb5T?usp=sharing).
+We provide the test set used in the Retrieval-augmented Language Modeling section on google drive, which you can download from the link above.
 
 If you are interested in doing more with retrieval, you can reproduce our retrieval corpus by following the steps described in the `./data` directory and the `./retrieval` directory. 
 We model our retrieval code after the Contriever code [repository](https://github.com/facebookresearch/contriever).
@@ -128,6 +129,8 @@ We model our retrieval code after the Contriever code [repository](https://githu
 ## Training
 
 Training consists of two stage: a warmup stage and the standard training stage. 
+Make sure that you have downloaded the necessary data as indicated by the `--train_file` and `--validation_file` arguments. 
+You can change the path of these arguments for your own system.
 
 ### Warmup Stage
 In the warmup stage, we simply train the model with the same inputs to both the encoder and the decoder. 
@@ -139,28 +142,51 @@ torchrun --nnodes=1 --nproc_per_node=4 train.py --config configs/train_llama2cha
 You can also customize this for your own purposes by taking a closer look at the config files and `train.py`.
 
 ### Standard Training
-CEPE: 
+In this stage, we take the model after the warmup stage and apply the standard cross-entropy loss.
 ```
-torchrun --nnodes=1 --nproc_per_node=8 train.py --config configs/train_llama2
+torchrun --nnodes=1 --nproc_per_node=8 train.py --config configs/train_llama2_cepe
 ```
+Note that to train with 4K tokens of encoder input and 4K tokens of decoder input, your GPU must have 80GB of memory. 
 
-CEPED:
+For CEPED, we also add the KL Divergence loss. You can customize the coefficient of each loss in the arguments `--kl_loss_cof` and `--lm_loss_cof`
 ```
-torchrun --nnodes=1 --nproc_per_node=8 train.py --config configs/train_llama2
+torchrun --nnodes=1 --nproc_per_node=8 train.py --config configs/train_llama2chat_cepe
 ```
 
 ### Pre-training MLM Encoder
-If you are interested in training your own encoder model, you can use:
+If you are interested in pre-training your own encoder model, you can use:
 ```
-torchrun --nnodes=1 --nproc_per_node=4 train_mlm.py --config configs/train_llama2
+torchrun --nnodes=1 --nproc_per_node=8 train_mlm.py --config configs/train_mlm
 ```
+Alternatively, you can simply use the MLM encoder that we have pre-trained, which you can download from [here](https://huggingface.co/hyen/LLaMA-MLM-Large).
 
 ## Language Modeling Evaluation
+To evaluate CEPE on ArXiv, you can run
+```
+python eval_lm.py --config configs/test_ab_32k_prevdoc_112x_4096 --model_name_or_path hyen/CEPE-LLaMA-2-7B --model_class cepe --validation_domains arxiv --output_dir output/CEPE-LLaMA-2-7B
+```
+You can find all other configs for evaluation in the `./config` directory.
+You can also find all the evaluation scripts in `./scripts`, for example, you can simply run
+```
+# CEPE
+bash scripts/run_cepe_lm.sh
+
+# StreamingLLM
+bash scripts/run_streamingllm_lm.sh
+
+# Vanilla models (LLaMA-2, LLaMA-2-32K, YaRN-64K, YaRN-128K)
+
+
+# RePlug
 
 
 ```
-python 
-```
+
+The language modeling code in `eval_lm.py` is modeled after the training code in `train.py`.
+However, there are just a few minor difference: 
+ * We implement the baseline models for evaluation (notably, StreamingLLM evalaution requires extra logic not supported by the Transformers Trainer). 
+ * We use a loop over the dataloader as opposed to using the Trainer evaluation loop, which gives a slightly faster throughput and lower memory usage.
+ * We add support for the HuggingFace datasets (PG19, ProofPile, and CodeParrot).
 
 ## Downstream Evaluation
 
@@ -169,8 +195,6 @@ python
 ## Bug or Questions?
 
 If you have any questions related to the code or the paper, feel free to email Howard (`hyen@cs.princeton.edu`). If you encounter any problems when using the code, or want to report a bug, you can open an issue. Please try to specify the problem with details so we can help you better and quicker!
-
-
 
 ## Citation
 

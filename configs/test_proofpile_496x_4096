@@ -1,0 +1,14 @@
+--tag test_proofpile
+--do_train False
+--validation_file proofpile
+--do_eval True
+--max_eval_samples 10
+--eval_window 256
+--chunk_size 4096
+--num_context 496
+--context_size 256
+--bf16 True
+--torch_dtype bfloat16
+--per_device_eval_batch_size 1
+--report_to none
+--filter_length 131072

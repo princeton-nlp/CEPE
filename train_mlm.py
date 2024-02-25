@@ -363,9 +363,7 @@ def main():
         )
     else:
         logger.info("Training new model from scratch")
-        model = LlamaForMLM(
-            config,
-        )
+        model = LlamaForMLM(config)
 
     logger.info(f"Model num params: {sum(p.numel() for p in model.parameters())}")
 
@@ -378,10 +376,6 @@ def main():
 
     # Data collator
     # This one will take care of randomly masking the tokens.
-    #data_collator = DataCollatorForLanguageModeling(
-        #tokenizer=tokenizer,
-        #mlm_probability=data_args.mlm_probability,
-    #)
     data_collator = MLMDataCollator(
         tokenizer=tokenizer,
         mlm_probability=data_args.mlm_probability,

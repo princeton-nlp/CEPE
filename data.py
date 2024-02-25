@@ -55,8 +55,6 @@ class MLMDataCollator(DataCollatorForLanguageModeling):
         """
         Prepare masked tokens inputs/labels for masked language modeling: 80% MASK, 10% random, 10% original.
         """
-        import torch
-
         labels = inputs.clone()
         # We sample a few tokens in each sequence for MLM training (with probability `self.mlm_probability`)
         probability_matrix = torch.full(labels.shape, self.mlm_probability)
@@ -144,7 +142,6 @@ class CombineStreamingDataset(Dataset):
     args:
         encoder_decoder_remote: the remote with the encoder-decoder input token ids; this is a required argument
         retrieval_remote: the remote with the retrieved documents, their and their neighbors' input token ids; this is an optional argument
-        pmi_remote: the remote with the PMI scores; this is an optional argument
         distill_remote: the remote with the distillation logits; this is an optional argument
         domains: the domains that we want to load.
 
@@ -158,7 +155,6 @@ class CombineStreamingDataset(Dataset):
         encoder_decoder_remote,
         epoch_size=None,
         retrieval_remote=None,
-        pmi_remote=None,
         distill_remote=None,
         domains=None,
         num_context=8,
@@ -166,7 +162,6 @@ class CombineStreamingDataset(Dataset):
         chunk_size=256,
         loss_chunk_size=None,
         tokenizer=None,
-        prepend_index=False,
         mask_prob=0.0,
         mask_seq_prob=0.0,
         load_strategy="best",
@@ -174,7 +169,6 @@ class CombineStreamingDataset(Dataset):
     ):
         self.encoder_decoder_remote = encoder_decoder_remote
         self.retrieval_remote = retrieval_remote
-        self.pmi_remote = pmi_remote
         self.distill_remote = distill_remote
         self.epoch_size = epoch_size
 
@@ -189,13 +183,9 @@ class CombineStreamingDataset(Dataset):
         self.load_strategy = load_strategy
 
         self.tokenizer = tokenizer
-        self.prepend_index = prepend_index
         self.retrieval_mode = retrieval_mode
         self.mask_prob = mask_prob
         self.mask_seq_prob = mask_seq_prob
-
-        if self.prepend_index:
-            assert self.tokenizer is not None
 
         self.load_streams()
 
@@ -222,14 +212,6 @@ class CombineStreamingDataset(Dataset):
         # we allow unsafe types because we save numpy arrays as pkl
         streams = self.get_streams(self.encoder_decoder_remote)
         self.encoder_decoder_dataset = StreamingDataset(streams=streams, epoch_size=self.epoch_size, allow_unsafe_types=True)
-
-        self.pmi_dataset = None
-        if self.pmi_remote is not None:
-            self.pmi_dataset = StreamingDataset(
-                streams=self.get_streams(self.pmi_remote), 
-                epoch_size=self.epoch_size, 
-                allow_unsafe_types=True
-            )
 
         self.distill_dataset = None
         if self.distill_remote is not None:
@@ -331,20 +313,6 @@ class CombineStreamingDataset(Dataset):
                         encoder_decoder_item["encoder_input_ids"] = ids
                         encoder_decoder_item["encoder_attention_mask"] = mask
 
-        if self.prepend_index:
-            # we could also do this at the loading stage, but this avoid having to load the entire dataset into memory, and this tokenization should be cheap and fast
-            prefix = self.tokenizer(
-                [f"Context {self.num_context - i}:" for i in range(self.num_context)],
-                return_tensors="np",
-                add_special_tokens=False,
-                padding="longest",
-            )
-            context_input_ids = encoder_decoder_item["encoder_input_ids"]
-            encoder_decoder_item["encoder_input_ids"] = np.concatenate([
-                prefix["input_ids"],
-                context_input_ids
-            ], axis=1)
-
         if self.distill_dataset is not None:
             distill_item = self.distill_dataset[sample_id]
             encoder_decoder_item["distill_prob"] = distill_item["target_prob"]
@@ -402,7 +370,6 @@ class CombineStreamingDataset(Dataset):
 
 @dataclass
 class ContextDataCollator:
-    #tokenizer: transformers.PreTrainedTokenizer
     def __call__(self, batch):
         new_batch = defaultdict(list)
 

@@ -177,7 +177,7 @@ class TestItem:
         self.continuations = [] if "options" not in test_item else test_item["options"]
         self.truncate_seperator = all_data["truncate_seperator"]
 
-        if args.model_class == "context" and "concat" in args.context_strategy:
+        if args.model_class == "cepe" and "concat" in args.context_strategy:
             # in this case, we are just moving the context to encoder, maybe we should find a better prompt for this
             #self.truncate_seperator = "... [The rest of the context has been moved to the start of the input]\n\n"
             self.truncate_seperator = "\n\n"
@@ -474,7 +474,7 @@ class TestItemDataset(Dataset):
     def __getitem__(self, idx):
         test_item = TestItem(self.args, self.all_data, self.test_data[idx], self.dataset)
 
-        if self.args.model_class == "context":
+        if self.args.model_class == "cepe":
             inputs = test_item.get_context_inputs(self.args, self.tokenizer)
         elif self.args.model_class == "replug":
             inputs = test_item.get_replug_inputs(self.args, self.tokenizer)
@@ -641,7 +641,7 @@ def run_test(args, tokenizer, model, device, dataset, test_file, demo_file):
 
                     continuation_length = continuation.pop("continuation_length")
                     continuation_input = {k: v.to(device) if isinstance(v, torch.Tensor) else v for k, v in continuation.items()}
-                    if args.model_class == "context":
+                    if args.model_class == "cepe":
                         continuation_input["encoder_hidden_states"] = outputs.encoder_hidden_states
 
                     # we need to prepend the mask from the prefix
@@ -751,7 +751,7 @@ def main():
     parser.add_argument("--tag", type=str, default="eval", help="tag to add to the output file")
 
     # model setting
-    parser.add_argument("--model_class", type=str, default="context", choices=["context", "replug", "vanilla"])
+    parser.add_argument("--model_class", type=str, default="context", choices=["cepe", "replug", "vanilla"])
     parser.add_argument("--model_name_or_path", type=str, default=None)
     parser.add_argument("--tokenizer_name_or_path", type=str, default=None)
 
@@ -840,7 +840,7 @@ def main():
         logger.info(f"setting tokenizer.model_max_length to {args.input_max_length}")
         tokenizer.model_max_length = args.input_max_length
 
-    if args.model_class == "context":
+    if args.model_class == "cepe":
         model_cls = LlamaForCausalContextLM
     elif args.model_class == "replug":
         model_cls = LlamaForReplugCausalLM

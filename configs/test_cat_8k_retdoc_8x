@@ -1,0 +1,15 @@
+--tag test_cat_8k-retdoc
+--do_train False
+--validation_file data/rp_concat_8k/test
+--validation_file_retrieval data/rp_concat_contriever_200m/test
+--retrieval_mode no_neighbor
+--do_eval True
+--max_eval_samples 5000
+--eval_window 1792
+--chunk_size 2048
+--num_context 8
+--context_size 256
+--bf16 True
+--torch_dtype bfloat16
+--per_device_eval_batch_size 1
+--report_to none

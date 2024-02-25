@@ -1,0 +1,13 @@
+--tag test_codeparrot
+--do_train False
+--validation_file codeparrot
+--do_eval True
+--max_eval_samples 5000
+--eval_window 256
+--chunk_size 4096
+--num_context 112
+--context_size 256
+--bf16 True
+--torch_dtype bfloat16
+--per_device_eval_batch_size 1
+--report_to none

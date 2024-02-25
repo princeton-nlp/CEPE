@@ -1,9 +1,9 @@
 --output_dir output/Llama-2-7b-chat-dup
 --model_name_or_path meta-llama/Llama-2-7b-chat-hf
---train_file ../p-cross-att/data/2point5m_sample_8k_chunks_concatenate/train 
+--train_file data/rp_concat_8k/train
 --train_load_strategy duplicate
 --train_domains arxiv,book,c4-rp,cc,github,stackexchange,wiki
---validation_file ../p-cross-att/data/2point5m_sample_8k_chunks_concatenate/eval_1k 
+--validation_file data/rp_concat_8k/test
 --validation_load_strategy duplicate
 --validation_domains arxiv,book,c4-rp,cc,github,stackexchange,wiki
 --eval_window 256
@@ -22,7 +22,6 @@
 --do_eval True 
 --overwrite_output_dir 
 --encoder_name_or_path hyen/LLaMA-MLM-Large
---encoder_name_or_path /scratch/gpfs/hyen/p-cross-att/output/llama-large-mlm/checkpoint-100000
 --train_encoder True 
 --gradient_accumulation_steps 32
 --ddp_find_unused_parameters False

@@ -106,7 +106,7 @@ def main():
     torch_dtype = model_args.torch_dtype if model_args.torch_dtype in ["auto", None] else getattr(torch, model_args.torch_dtype)
 
     # find the appropriate model cls
-    if model_args.model_class == "context":
+    if model_args.model_class == "cepe":
         logger.info("Using modified Llama")
         model_cls = LlamaForCausalContextLM
         collator = ContextDataCollator()

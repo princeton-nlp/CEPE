@@ -28,7 +28,7 @@ train_eval_length_filter = int(sys.argv[2])
 num_decoder_tokens = int(sys.argv[3])
 prev_chunk_size = train_eval_length_filter - num_decoder_tokens
 
-eval_target = int(sys.argv[4]) # The number of blocks to sample for evaluation
+test_target = int(sys.argv[4]) # The number of blocks to sample for test 
 train_target = int(sys.argv[5]) # The number of blocks to sample for training
 
 folders = {
@@ -74,7 +74,7 @@ def filter_length(data, split):
 
     return chunks
 
-# split files into eval, train
+# split files into test, train
 sampled_files = defaultdict(dict)
 folder_to_data = defaultdict(dict)
 ts = time.time()
@@ -112,31 +112,31 @@ for folder, files in folder_to_files.items():
         buffer_ids = [buffer_ids[i] for i in random_idx]
         buffer_lengths = [buffer_lengths[i] for i in random_idx]
 
-        # then divide in to eval, train, and retrieval
+        # then divide in to test, train, and retrieval
         ev = [da.concatenate([[len(buffer_lengths[0])], buffer_lengths[0], buffer_ids[0]])]
         tr = [da.concatenate([[len(buffer_lengths[i])], buffer_lengths[i], buffer_ids[i]]) for i in range(1, 50)]
         re = [da.concatenate([[len(buffer_lengths[i])], buffer_lengths[i], buffer_ids[i]]) for i in range(50, 100)]
         return ev, tr, re
 
     if len(files) == 1:
-        sampled_files[folder]["eval"] = files
+        sampled_files[folder]["test"] = files
         sampled_files[folder]["train"] = files
         sampled_files[folder]["retrieval"] = files
         data = np.load(files[0], mmap_mode="r")
         # instead of shuffling the entire array, we split into 100 chunks and shuffle for a speedup
         e, t, r = handle_data(data)
 
-        folder_to_data[folder]["eval"] = e
+        folder_to_data[folder]["test"] = e
         folder_to_data[folder]["train"] = t
         folder_to_data[folder]["retrieval"] = r
     else:
         random.shuffle(files)
         e, t, r = split(files)
-        sampled_files[folder]["eval"] = e
+        sampled_files[folder]["test"] = e
         sampled_files[folder]["train"] = t
         sampled_files[folder]["retrieval"] = r
 
-        folder_to_data[folder]["eval"] = e
+        folder_to_data[folder]["test"] = e
         folder_to_data[folder]["train"] = t
         folder_to_data[folder]["retrieval"] = r
 
@@ -220,15 +220,15 @@ def sample_from_folder(files, folder, target, split):
     print(f"finished writing with {count} samples")
     writer.finish()
 
-# Eval first
-print("Sampling eval data...")
+# test first
+print("Sampling test data...")
 for folder in target_folders:
     print(f"domain: {folder}")
-    selected = folder_to_data[folder]["eval"]
-    sample_from_folder(selected, folder, eval_target, "eval")
-print("done with eval")
+    selected = folder_to_data[folder]["test"]
+    sample_from_folder(selected, folder, test_target, "test")
+print("done with test")
 
-# Train then
+# train next
 print("Sampling train data...")
 for folder in target_folders:
     print(f"domain: {folder}")

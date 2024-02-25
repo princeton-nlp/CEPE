@@ -27,7 +27,7 @@ overwrite = False
 prev_chunk_size = int(sys.argv[2])
 num_decoder_tokens = int(sys.argv[3])
 
-eval_target = 35000 # The number of blocks to sample for evaluation
+test_target = 35000 # The number of blocks to sample for evaluation
 train_target = 2500000 # The number of blocks to sample for each training shard
 
 retrieval_target = int(sys.argv[4]) # The number of blocks to sample for each training shard
@@ -60,7 +60,7 @@ for line in files:
         if f"{split}/" in tname and split in target_folders:
             folder_to_files[split].append(os.path.join(tokenized_folder, tname))
 
-# split files into eval, train, and retrieval
+# split files into test, train, and retrieval
 sampled_files = defaultdict(dict)
 folder_to_data = defaultdict(dict)
 ts = time.time()
@@ -98,7 +98,7 @@ for folder, files in folder_to_files.items():
         buffer_ids = [buffer_ids[i] for i in random_idx]
         buffer_lengths = [buffer_lengths[i] for i in random_idx]
 
-        # then divide in to eval, train, and retrieval
+        # then divide in to test, train, and retrieval
         ev = [da.concatenate([[len(buffer_lengths[0])], buffer_lengths[0], buffer_ids[0]])]
         # tr = da.concatenate([buffer_lengths[1:50].size] + buffer_lengths[1:50].reshape(-1) + buffer_ids[1:50].reshape(-1))
         tr = [da.concatenate([[len(buffer_lengths[i])], buffer_lengths[i], buffer_ids[i]]) for i in range(1, 50)] 
@@ -107,24 +107,24 @@ for folder, files in folder_to_files.items():
         return ev, tr, re
 
     if len(files) == 1:
-        sampled_files[folder]["eval"] = files
+        sampled_files[folder]["test"] = files
         sampled_files[folder]["train"] = files
         sampled_files[folder]["retrieval"] = files
         data = np.load(files[0], mmap_mode="r")
         # instead of shuffling the entire array, we split into 100 chunks and shuffle for a speedup
         e, t, r = handle_data(data)
 
-        folder_to_data[folder]["eval"] = e
+        folder_to_data[folder]["test"] = e
         folder_to_data[folder]["train"] = t
         folder_to_data[folder]["retrieval"] = r
     else:
         random.shuffle(files)
         e, t, r = split(files)
-        sampled_files[folder]["eval"] = e
+        sampled_files[folder]["test"] = e
         sampled_files[folder]["train"] = t
         sampled_files[folder]["retrieval"] = r
 
-        folder_to_data[folder]["eval"] = e
+        folder_to_data[folder]["test"] = e
         folder_to_data[folder]["train"] = t
         folder_to_data[folder]["retrieval"] = r
 
@@ -134,7 +134,7 @@ with open(os.path.join(output_folder, "sampled_files.json"), "w") as f:
     json.dump(sampled_files, f, indent=4)
 
 def filter_length(data, split):
-    # put each data point into chunks of specified lengths (different for train/eavl and retrieval)
+    # put each data point into chunks of specified lengths (different for train/test and retrieval)
     n = data[0].compute() if isinstance(data, da.Array) else data[0]
     lengths = data[1:n+1].compute() if isinstance(data, da.Array) else data[1:n+1]
     data = data[n+1:]
@@ -296,21 +296,21 @@ def sample_retrieval(files, folder, target):
 
     print(f"Shard total: {count}")
 
-# Eval first
-print("Sampling eval data...")
+# test first
+print("Sampling test data...")
 for folder in target_folders:
     print(f"domain: {folder}")
-    selected = folder_to_data[folder]["eval"]
-    sample_from_folder(selected, folder, eval_target, "eval")
-print("done with eval")
+    selected = folder_to_data[folder]["test"]
+    sample_from_folder(selected, folder, test_target, "test")
+print("test done")
 
-# Train then
+# train next
 print("Sampling train data...")
 for folder in target_folders:
     print(f"domain: {folder}")
     selected = folder_to_data[folder]["train"]
     sample_from_folder(selected, folder, train_target, "train")
-print("Train done.")
+print("train done")
 
 # retrieval last
 print("Sampling retreival corpus...")
@@ -318,4 +318,4 @@ for folder in target_folders:
     print(f"domain: {folder}")
     selected = folder_to_data[folder]["retrieval"]
     sample_retrieval(selected, folder, retrieval_target)
-print("Retrieval done.")
+print("retrieval done")

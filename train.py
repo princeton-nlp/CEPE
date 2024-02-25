@@ -100,7 +100,7 @@ class ModelArguments:
     )
     model_class: Optional[str] = field(
         default="context",
-        metadata={"help": "The model class to use during instantiation. Options are: 'context' (default), 'vanilla', and 'replug'"}
+        metadata={"help": "The model class to use during instantiation. Options are: 'cepe' (default), 'vanilla', and 'replug'"}
     )
     replug_passage_temperature: Optional[float] = field(
         default=1.0,
@@ -275,10 +275,6 @@ class DataTrainingArguments:
         default=False,
         metadata={"help": "Maximize the amount of data from the preprocessing data, only applies to training."},
     )
-    prepend_index: bool = field(
-        default=False,
-        metadata={"help": "Prepend the index of the context."},
-    )
     save_to_s3: bool = field(
         default=False,
         metadata={"help": "Save the model to s3."},
@@ -426,7 +422,6 @@ def main():
             chunk_size=data_args.chunk_size,
             domains=domains,
             load_strategy=data_args.train_load_strategy,
-            prepend_index=data_args.prepend_index,
             tokenizer=tokenizer,
             epoch_size=data_args.max_train_samples,
             mask_prob=data_args.mask_prob,
@@ -463,7 +458,6 @@ def main():
             loss_chunk_size=data_args.eval_window,
             domains=domains,
             load_strategy=data_args.validation_load_strategy,
-            prepend_index=data_args.prepend_index,
             tokenizer=tokenizer,
             epoch_size=data_args.max_eval_samples,
         )
@@ -490,7 +484,7 @@ def main():
     torch_dtype = model_args.torch_dtype if model_args.torch_dtype in ["auto", None] else getattr(torch, model_args.torch_dtype)
 
     # find the appropriate model cls
-    if model_args.model_class == "context":
+    if model_args.model_class == "cepe":
         logger.info("Using modified Llama")
         model_cls = LlamaForCausalContextLM
         collator = ContextDataCollator()
@@ -581,7 +575,7 @@ def main():
                     torch.nn.init.kaiming_normal_(l.cross_attn.o_proj.weight.data)
                 l.cross_attn.layernorm.weight.data = l.post_attention_layernorm.weight.data.clone()
 
-    if training_args.do_train and model_args.model_class == "context":
+    if training_args.do_train and model_args.model_class == "cepe":
         logger.info(f"Initializing cross attention weights with mode {model_args.init_mode}")
         initialize_cross_attention_weights(model)
 
@@ -597,7 +591,7 @@ def main():
             return True
         if model_args.train_encoder and "encoder" in param_name:
             return True
-        return "cross_attn" in param_name if model_args.model_class == "context" and config.num_cross_attn_layers > 0 else True
+        return "cross_attn" in param_name if model_args.model_class == "cepe" and config.num_cross_attn_layers > 0 else True
 
     for n, p in model.named_parameters():
         p.requires_grad = train_param(n)
