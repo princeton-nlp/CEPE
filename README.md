@@ -1,14 +1,18 @@
-# Long-Context Language Modeling with Parallel Encodings
+# Long-Context Language Modeling with Parallel Encodings 🍄
 
 <!-- <p align="center"><img src="https://github.com/princeton-nlp/ALCE/blob/main/assets/moose.png?raw=true" alt="ALCE" width="15%"><br>*: ALCE is pronounced as /elk/ as ALCE is the Latin word for elk (Europe) or moose (North America). -->
 <!-- </p> -->
 
 This repository contains the code and data for paper [Long-Context Language Modeling Parallel Encodings](). 
-In this work, we propose **CEPE**🍄 — **C**ontext-**E**xpansion with **P**arallel **E**ncodings — a flexible framework for extending the context window of language models. 
+In this work, we propose **CEPE** — **C**ontext-**E**xpansion with **P**arallel **E**ncodings — a flexible framework for extending the context window of language models. 
 This repository includes the code for preprocessing the data, training CEPE, and evaluating all baselines.
+
+<p align="center"><br>*: CÈPE is a type of mushroom 🍄 and is prounouced /sep/
+</p>
 
 <img src="https://github.com/princeton-nlp/CEPE/blob/main/assets/overview.png?raw=true" alt="CEPE" width="100%">
 
+---
 
 ## Quick Start
 
