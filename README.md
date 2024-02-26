@@ -166,7 +166,8 @@ To evaluate CEPE on ArXiv, you can run
 python eval_lm.py --config configs/test_ab_32k_prevdoc_112x_4096 --model_name_or_path hyen/CEPE-LLaMA-2-7B --model_class cepe --validation_domains arxiv --output_dir output/CEPE-LLaMA-2-7B
 ```
 You can find all other configs for evaluation in the `./config` directory.
-You can also find all the evaluation scripts in `./scripts`, for example, you can simply run
+
+Alternatively, you can reproduce all LM experiments from the paper using our scripts:
 ```
 # CEPE
 bash scripts/run_cepe_lm.sh
@@ -175,11 +176,10 @@ bash scripts/run_cepe_lm.sh
 bash scripts/run_streamingllm_lm.sh
 
 # Vanilla models (LLaMA-2, LLaMA-2-32K, YaRN-64K, YaRN-128K)
-
+bash scripts/run_vanilla_lm.sh
 
 # RePlug
-
-
+bash scripts/run_replug_lm.sh
 ```
 
 The language modeling code in `eval_lm.py` is modeled after the training code in `train.py`.
@@ -190,7 +190,36 @@ However, there are just a few minor difference:
 
 ## Downstream Evaluation
 
+### Open-Domain Question Answering
+First, you want to download the datasets with Contriever-retrieved passages
 
+|              Name | Link |
+|:--------------------------|------------|
+| Natural Questions  | [link](https://drive.google.com/drive/folders/16gsHoVGEr5yUEPjqa0YJWjWnLm1C6oAX?usp=sharing)|
+| TriviaQA  | [link](https://drive.google.com/drive/folders/1e6Wp6f2fg7t8XGM6LZdS0aWJ6mfHrflN?usp=sharing)|
+| PopQA  | [link](https://drive.google.com/drive/folders/1T7QfZpfdxY9LgHxRSZE3lwDQVzjLf_27?usp=sharing) |
+
+Then, you can run all the experiments from our paper with:
+```
+bash scripts/run_qa.sh
+```
+If you are interested in more customized runs, you can use the script above as an example.
+You can simply modify the config file or add additional command line arguments to `python eval_downstream.py`.
+
+### In-Context Learning (ICL)
+All ICL datasets are available on HuggingFace, which means that you can simply use `datasets.load_dataset` for everything.
+To run the experiments from the paper, use:
+```
+bash scripts/run_icl.sh
+```
+
+### ZeroScrolls
+To run the experiments from the paper, use:
+```
+bash scripts/run_zeroscrolls.sh
+```
+
+We use the validation sets available on HuggingFace, which may either use the version released by the original authors or by SCROLLS (Shaham et al., 2022).
 
 ## Bug or Questions?
 

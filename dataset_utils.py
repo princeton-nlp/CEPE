@@ -137,104 +137,6 @@ def load_hf_dataset(dataset, train, test):
         balanced_sampling = True
         domain_prompt = "Sentiment:"
 
-    elif dataset == "super_glue/wic" or dataset == "wic":
-        train_dataset = load_dataset("super_glue", "wic")["train"]
-        test_dataset = load_dataset("super_glue", "wic")["validation"]
-        options = [" no", " yes"]
-        template = "{instruction}{sentence1}\n{sentence2}\nquestion: Is the word '{word}' used the same way in the two sentences above?\nanswer: {answer}"
-        instruction = "Instruction: Decide whether the word is used the same way in the two sentences.\n\n"
-
-        # add options to each example
-        train_dataset = train_dataset.map(lambda example: {**example, "options": options, "answer": options[example["label"]]})
-        test_dataset = test_dataset.map(lambda example: {**example, "options": options, "answer": options[example["label"]]})
-
-        recalibrate_every = True
-        balanced_sampling = True
-        domain_prompt = "answer:"
-
-    elif dataset == "super_glue/wsc" or dataset == "wsc":
-        train_dataset = load_dataset("super_glue", "wsc")["train"]
-        test_dataset = load_dataset("super_glue", "wsc")["validation"]
-        options = [" no", " yes"]
-        template = "{instruction}Question: In the sentence \"{text}\", does the pronoun '{span2_text}' refer to {span1_text}?\nAnswer:{answer}"
-        instruction = "Instruction: Decide whether the pronoun refers to the entity.\n\n"
-
-        # add options to each example
-        train_dataset = train_dataset.map(lambda example: {**example, "options": options, "answer": options[example["label"]]})
-        test_dataset = test_dataset.map(lambda example: {**example, "options": options, "answer": options[example["label"]]})
-
-        recalibrate_every = True
-        balanced_sampling = True
-        domain_prompt = "Answer:"
-
-    elif dataset == "super_glue/rte" or dataset == "rte":
-        train_dataset = load_dataset("super_glue", "rte")["train"]
-        test_dataset = load_dataset("super_glue", "rte")["validation"]
-        options = [" True", " False"]
-        template = "{instruction}{premise}\nQuestion: {hypothesis} True or False?\nAnswer:{answer}"
-        instruction = "Instruction: Decide whether the hypothesis is true or false.\n\n"
-
-        # add options to each example
-        train_dataset = train_dataset.map(lambda example: {**example, "options": options, "answer": options[example["label"]]})
-        test_dataset = test_dataset.map(lambda example: {**example, "options": options, "answer": options[example["label"]]})
-
-        recalibrate_every = False
-        balanced_sampling = True
-        domain_prompt = "answer:"
-
-    elif dataset == "super_glue/cb" or dataset == "cb":
-        train_dataset = load_dataset("super_glue", "cb")["train"]
-        test_dataset = load_dataset("super_glue", "cb")["validation"]
-        options = [" true", " false", " neither"]
-        template = "{instruction}{premise}\nQuestion: {hypothesis}. true, false or neither?\nanswer:{answer}"
-        instruction = "Instruction: Decide whether the hypothesis is true, false or neither.\n\n"
-
-        # add options to each example
-        train_dataset = train_dataset.map(lambda example: {**example, "options": options, "answer": options[example["label"]]})
-        test_dataset = test_dataset.map(lambda example: {**example, "options": options, "answer": options[example["label"]]})
-
-        recalibrate_every = False
-        balanced_sampling = False # there may not be enough demos from each class -- only 16 neither
-        domain_prompt = "answer:"
-
-    elif dataset == "super_glue/copa" or dataset == "copa":
-        train_dataset = load_dataset("super_glue", "copa")["validation"]
-        test_dataset = load_dataset("super_glue", "copa")["train"]
-        # slight modification to the original prompt https://people.ict.usc.edu/~gordon/copa.html
-        template = "{instruction}Premise: {premise}\nQuestion: {question}\nAnswer:{answer}"
-        instruction = "Instruction: Answer the question for the given premise.\n\n"
-
-        # add options to each example
-        train_dataset = train_dataset.map(lambda example: {**example,
-            "options": [" "+example["choice1"], " "+example["choice2"]],
-            "question": "What was the cause of this?" if example["question"] == "cause" else "What happened as a result?",
-            "answer": " "+example[f"choice{example['label']+1}"]
-        })
-        test_dataset = test_dataset.map(lambda example: {**example,
-            "options": [" "+example["choice1"], " "+example["choice2"]],
-            "question": "What was the cause of this?" if example["question"] == "cause" else "What happened as a result?",
-            "answer": " "+example[f"choice{example['label']+1}"]
-        })
-
-        recalibrate_every = True
-        balanced_sampling = False
-        domain_prompt = "Answer:"
-
-    elif dataset == "super_glue/multirc" or dataset == "multirc":
-        train_dataset = load_dataset("super_glue", "multirc")["train"]
-        test_dataset = load_dataset("super_glue", "multirc")["validation"]
-        options = [" incorrect", " correct"]
-        template = "{instruction}Context: {paragraph}\n{question}\n{choice}\nanswer:{answer}"
-        instruction = "Instruction: Answer the question using the given context.\n\n"
-
-        # add options to each example
-        train_dataset = train_dataset.map(lambda example: {**example, "options": options, "choice": example["answer"], "answer": options[example["label"]]})
-        test_dataset = test_dataset.map(lambda example: {**example, "options": options, "choice": example["answer"], "answer": options[example["label"]]})
-
-        domain_prompt = "answer:"
-        recalibrate_every = False
-        balanced_sampling = True
-
     elif dataset == "mr":
         train_dataset = load_dataset("rotten_tomatoes")["train"]
         test_dataset = load_dataset("rotten_tomatoes")["test"]
@@ -249,112 +151,6 @@ def load_hf_dataset(dataset, train, test):
         domain_prompt = "Sentiment:"
         recalibrate_every = False
         balanced_sampling = True
-
-    elif dataset == "arc-easy" or dataset == "arc-challenge":
-        if "easy" in dataset:
-            all_dataset = load_dataset("ai2_arc", "ARC-Easy")
-        else:
-            all_dataset = load_dataset("ai2_arc", "ARC-Challenge")
-        train_dataset = all_dataset["train"]
-        test_dataset = all_dataset["test"]
-        template = "{instruction}Question: {question}\nChoices:\n{choices_text}\nAnswer:{answer}"
-        instruction = "Instruction: Choose the correct answer for the question.\n\n"
-
-        train_dataset = train_dataset.map(lambda example: {
-            **example,
-            "options": [f" {o}. {example['choices']['text'][i]}" for i, o in enumerate(example['choices']['label'])],
-            "answer": f" {example['answerKey']}. {example['choices']['text'][example['choices']['label'].index(example['answerKey'])]}"
-        })
-        train_dataset = train_dataset.map(lambda example: {**example, "choices_text": "\n".join(example["options"])})
-        test_dataset = test_dataset.map(lambda example: {
-            **example,
-            "options": [f" {o}. {example['choices']['text'][i]}" for i, o in enumerate(example['choices']['label'])],
-            "answer": f" {example['answerKey']}. {example['choices']['text'][example['choices']['label'].index(example['answerKey'])]}"
-        })
-        test_dataset = test_dataset.map(lambda example: {**example, "choices_text": "\n".join(example["options"])})
-
-        domain_prompt = "Answer:"
-        recalibrate_every = True
-        balanced_sampling = False
-
-    elif dataset == "logiqa":
-        all_dataset = load_dataset("EleutherAI/logiqa")
-        train_dataset = all_dataset["train"]
-        test_dataset = all_dataset["validation"]
-        template = "{instruction}Passage: {context}\nQuestion: {question}\nChoices:\n{choices_text}\nAnswer:{answer}"
-        options = ["a", "b", "c", "d"]
-        train_dataset = train_dataset.map(lambda example: {
-            **example,
-            "options": [f" {o.upper()}. {example['options'][i]}" for i, o in enumerate(options)],
-            "answer": f" {example['label'].upper()}. {example['options'][options.index(example['label'])]}"
-        })
-        train_dataset = train_dataset.map(lambda example: {**example, "choices_text": "\n".join(example["options"])})
-        test_dataset = test_dataset.map(lambda example: {
-            **example,
-            "options": [f" {o.upper()}. {example['options'][i]}" for i, o in enumerate(options)],
-            "answer": f" {example['label'].upper()}. {example['options'][options.index(example['label'])]}"
-        })
-        test_dataset = test_dataset.map(lambda example: {**example, "choices_text": "\n".join(example["options"])})
-
-        domain_prompt = "Answer:"
-        recalibrate_every = True
-        balanced_sampling = False
-        instruction = "Instruction: Choose the correct answer for the question.\n\n"
-
-    elif dataset == "piqa":
-        all_dataset = load_dataset("piqa")
-        train_dataset = all_dataset["train"]
-        test_dataset = all_dataset["validation"]
-        template = "{instruction}Question: {goal}\nAnswer:{answer}"
-        train_dataset = train_dataset.map(lambda example: {**example, "options": [" "+example["sol1"], " "+example["sol2"]], "answer": " "+(example["sol1"] if example["label"] == 0 else example["sol2"])})
-        test_dataset = test_dataset.map(lambda example: {**example, "options": [" "+example["sol1"], " "+example["sol2"]], "answer": " "+(example["sol1"] if example["label"] == 0 else example["sol2"])})
-
-        domain_prompt = "Answer:"
-        recalibrate_every = True
-        balanced_sampling = True
-        instruction = "Instruction: Answer the question.\n\n"
-
-    elif dataset == "sciq":
-        all_dataset = load_dataset("sciq")
-        all_dataset = all_dataset.map(lambda example: {
-            **example,
-            "support": example["support"].lstrip(),
-            "options": [" "+example["distractor1"], " "+example["distractor2"], " "+example["distractor3"], " "+example["correct_answer"]],
-            "answer": " "+example["correct_answer"]
-        })
-        train_dataset = all_dataset["train"]
-        test_dataset = all_dataset["validation"]
-        template = "{instruction}{support}\nQuestion: {question}\nAnswer:{answer}"
-
-        domain_prompt = "answer:"
-        recalibrate_every = True
-        balanced_sampling = True
-        instruction = "Instruction: Answer the question using the passage.\n\n"
-
-    elif dataset == "hellaswag":
-        # https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/tasks/hellaswag/utils.py
-        def preprocess(text):
-            text = text.strip()
-            # NOTE: Brackets are artifacts of the WikiHow dataset portion of HellaSwag.
-            text = text.replace(" [title]", ". ")
-            text = re.sub("\\[.*?\\]", "", text)
-            text = text.replace("  ", " ")
-            return text
-
-        all_dataset = load_dataset("hellaswag")
-
-        template = "{instruction}{query}{answer}"
-        train_dataset, test_dataset = [all_dataset[split].map(lambda example: {
-            **example,
-            "query": preprocess(example["activity_label"] + ": " + example["ctx_a"] + " " + example["ctx_b"].capitalize()),
-            "options": [" " + preprocess(ending) for ending in example["endings"]],
-            "answer": " " + preprocess(example["endings"][int(example["label"])]),
-        }) for split in ("train", "validation")]
-
-        domain_prompt = "Answer:"
-        recalibrate_every = True
-        balanced_sampling = False
-        instruction = "Instruction: Finish the sentence.\n\n"
 
     elif dataset == "govreport" or dataset == "scrolls/govreport":
         # the two should be the exact same
@@ -449,7 +245,7 @@ def load_hf_dataset(dataset, train, test):
         # note: zeroscrolls use F1 for qasper
         use_rouge = True 
 
-    elif dataset == "quality" or dataset == "quality-generate":
+    elif dataset == "quality":
         all_dataset = load_dataset("tau/scrolls", "quality")
         document_template = "Story:\n{text}"
         # template from zeroscrolls, which is slighlty different from the scrolls template
@@ -491,19 +287,6 @@ def load_hf_dataset(dataset, train, test):
         truncate_seperator = "... [The rest of the story is omitted]\n\n"
         # zeroscrolls use acc as the metric but it's a bit harsh so we also include rouge-l
         use_rouge = True
-
-    elif dataset == "yelp":
-        all_dataset = load_dataset("yelp_review_full")
-        labels = [' 1', ' 2', ' 3', ' 4', ' 5']
-        template = "{instruction}Review: {text}\nStars:{answer}"
-        instruction = "Instruction: Choose the number of stars for the sentence.\n\n"
-
-        all_dataset = all_dataset.map(lambda example: {**example, "answer": labels[example["label"]], "options": labels})
-        train_dataset = all_dataset["train"]
-        test_dataset = all_dataset["test"]
-        recalibrate_every = False
-        balanced_sampling = True
-        domain_prompt = "Stars:"
 
     elif dataset == "sst5":
         all_dataset = load_dataset("SetFit/sst5")
@@ -632,30 +415,6 @@ DATASET_TO_TASK = {
     "popqa": "generate",
     "triviaqa": "generate",
 
-    # popular tasks from LM Harness and other sources
-    "boolq": "loglikelihood",
-    "mmlu": "loglikelihood",
-    "ag_news": "loglikelihood",
-    "sst2": "loglikelihood",
-    "wic": "loglikelihood",
-    "wsc": "loglikelihood",
-    "rte": "loglikelihood",
-    "cb": "loglikelihood",
-    "copa": "loglikelihood",
-    "multirc": "loglikelihood",
-    "mr": "loglikelihood",
-    "arc-easy": "loglikelihood",
-    "arc-challenge": "loglikelihood",
-    "logiqa": "loglikelihood",
-    "piqa": "loglikelihood",
-    "sciq": "loglikelihood",
-    "hellaswag": "loglikelihood",
-
-    # ALCE
-    "alce-asqa": "generate",
-    "alce-eli5": "generate",
-    "alce-qampari": "generate",
-
     # Scrolls/ZeroScrolls
     "qmsum": "generate",
     "summ_screen_fd": "generate",
@@ -664,12 +423,13 @@ DATASET_TO_TASK = {
 
     "narrativeqa": "generate",
     "qasper": "generate",
-    "quality": "loglikelihood",
-    "quality-generate": "generate",
+    "quality": "generate",
 
     # datasets from PCW
+    "sst2": "loglikelihood",
+    "ag_news": "loglikelihood",
+    "mr": "loglikelihood",
     "sst5": "loglikelihood",
-    "yelp": "loglikelihood",
     "nlu_scenario": "loglikelihood",
     "trec-coarse": "loglikelihood",
     "trec-fine": "loglikelihood",

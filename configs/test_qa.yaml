@@ -1,0 +1,35 @@
+# evaluate on open-domain QA datasets
+tag: qa
+
+# model settings
+model_class: vanilla
+model_name_or_path: meta-llama/Llama-2-7b-hf
+output_dir: output/Llama-2-7b-hf
+
+# data settings
+datasets: triviaqa,nq,popqa
+demo_files: data/triviaqa/train.jsonl,data/nq-open/train.jsonl,data/popqa/test.jsonl
+test_files: data/triviaqa/validation.jsonl,data/nq-open/test.jsonl,data/popqa/test.jsonl
+seed: 42
+
+# evaluation settings
+shot: 2
+n_shot_decoder: 0
+n_shot_encoder: 2
+
+n_demo_doc: 1
+n_demo_doc_decoder: 1
+n_demo_doc_encoder: 0
+n_test_doc: 10
+n_test_doc_encoder: 0
+n_test_doc_decoder: 10
+include_title: true 
+use_instruction: false
+
+# generation settings
+input_max_length: 4096
+do_sample: false
+temperature: 1.0
+top_p: 1.0
+generation_max_length: 25
+context_strategy: separate

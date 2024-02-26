@@ -1,0 +1,27 @@
+# evaluate the datasets from Parallel-Context-Windows with ICL
+tag: icl
+
+# model settings
+model_class: vanilla
+model_name_or_path: meta-llama/Llama-2-7b-hf
+output_dir: output/Llama-2-7b-hf
+
+# data settings
+datasets: sst2,sst5,mr,ag_news,trec-coarse,trec-fine,dbpedia,nlu_scenario,nlu_intent,banking77,clinic150
+demo_files: ',,,,,,,,,'
+test_files: ',,,,,,,,,'
+
+max_test_samples: 250
+seed: 42
+
+# evaluation settings
+shot: 2
+n_shot_encoder: 0
+n_shot_decoder: 2
+
+calibrate_nll: true
+empty_domain_prompt: true
+
+# generation settings
+input_max_length: 4096
+context_max_length: 256
