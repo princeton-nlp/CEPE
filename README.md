@@ -41,6 +41,7 @@ contexts = tokenizer([
 
 inputs = tokenizer("Question: what are three ideas for a social with a large groups of friends in New York City.\nAnswer:", return_tensors="pt")
 
+# encoder_input_ids and encoder_attention_mask should be in the shape of (bsz, n_ctx, seq_length)
 output = model.generate(
   input_ids=inputs.input_ids.to(device), 
   attention_mask=inputs.attention_mask.to(device), 
