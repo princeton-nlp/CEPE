@@ -4,7 +4,7 @@
 <!-- </p> -->
 
 This repository contains the code and data for paper [Long-Context Language Modeling Parallel Encodings](). 
-In this work, we propose **CEPE** — **C**ontext-**E**xpansion with **P**arallel **E**ncodings — a flexible framework for extending the context window of language models. 
+In this work, we propose **CEPE** — **C**ontext **E**xpansion with **P**arallel **E**ncoding — a flexible framework for extending the context window of language models. 
 This repository includes the code for preprocessing the data, training CEPE, and evaluating all baselines.
 
 <p align="center"><br>*: CÈPE is a type of mushroom 🍄 and is prounouced /sep/
