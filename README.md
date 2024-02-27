@@ -234,6 +234,13 @@ If you have any questions related to the code or the paper, feel free to email H
 
 Please cite our paper if you use CEPE in your work:
 
-<!-- ```bibtex
-TODO: 
-``` -->
+```bibtex
+@misc{yen2024longcontext,
+      title={Long-Context Language Modeling with Parallel Context Encoding}, 
+      author={Howard Yen and Tianyu Gao and Danqi Chen},
+      year={2024},
+      eprint={2402.16617},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+```
