@@ -3,7 +3,7 @@
 <!-- <p align="center"><img src="https://github.com/princeton-nlp/ALCE/blob/main/assets/moose.png?raw=true" alt="ALCE" width="15%"><br>*: ALCE is pronounced as /elk/ as ALCE is the Latin word for elk (Europe) or moose (North America). -->
 <!-- </p> -->
 
-This repository contains the code and data for paper [Long-Context Language Modeling Parallel Encodings](https://arxiv.org/abs/2402.16617). 
+This repository contains the code and data for our ACL 2024 paper [Long-Context Language Modeling Parallel Encodings](https://arxiv.org/abs/2402.16617). 
 In this work, we propose **CEPE** — **C**ontext **E**xpansion with **P**arallel **E**ncoding — a flexible framework for extending the context window of language models. 
 This repository includes the code for preprocessing the data, training CEPE, and evaluating all baselines.
 
