@@ -200,9 +200,9 @@ First, you want to download the datasets with Contriever-retrieved passages
 
 |              Name | Link |
 |:--------------------------|------------|
-| Natural Questions  | [link](https://drive.google.com/drive/folders/16gsHoVGEr5yUEPjqa0YJWjWnLm1C6oAX?usp=sharing)|
-| TriviaQA  | [link](https://drive.google.com/drive/folders/1e6Wp6f2fg7t8XGM6LZdS0aWJ6mfHrflN?usp=sharing)|
-| PopQA  | [link](https://drive.google.com/drive/folders/1T7QfZpfdxY9LgHxRSZE3lwDQVzjLf_27?usp=sharing) |
+| Natural Questions  | [link](https://drive.google.com/file/d/10_5t9Ca6LtaIIkqmdiy-342mZ3nvdFqc/view?usp=drive_link)|
+| TriviaQA  | [link](https://drive.google.com/file/d/1WMTRwFeL8StHaJzbXetRAA53fgWDMJW0/view?usp=drive_link)|
+| PopQA  | [link](https://drive.google.com/file/d/1cS5Q9PlP5QmrdytMfqmUgQcQATHqi-F-/view?usp=sharing) |
 
 Then, you can run all the experiments from our paper with:
 ```
