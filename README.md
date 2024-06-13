@@ -1,11 +1,11 @@
-# Long-Context Language Modeling with Parallel Encodings <img src="assets/logo.png" alt="CEPE" width="30" height="30">
+# Long-Context Language Modeling with Parallel Encodings <img src="assets/CEPE logo.png" alt="CEPE" width="30" height="30">
 
 This repository contains the code and data for our ACL 2024 paper [Long-Context Language Modeling Parallel Encodings](https://arxiv.org/abs/2402.16617). 
-In this work, we propose **CEPE**  <img src="assets/logo.png" alt="CEPE" width="20" height="20"> — **C**ontext **E**xpansion with **P**arallel **E**ncoding — a flexible framework for extending the context window of language models. 
+In this work, we propose **CEPE**  <img src="assets/CEPE logo.png" alt="CEPE" width="20" height="20"> — **C**ontext **E**xpansion with **P**arallel **E**ncoding — a flexible framework for extending the context window of language models. 
 This repository includes the code for preprocessing the data, training CEPE, and evaluating all baselines.
 
 <p align="center"><br>*: CÈPE is a type of mushroom 
-  <img src="assets/logo.png" alt="CEPE" width="20" height="20">
+  <img src="assets/CEPE logo.png" alt="CEPE" width="20" height="20">
   and is prounouced /sep/
 </p>
 
